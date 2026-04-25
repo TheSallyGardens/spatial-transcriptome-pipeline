@@ -1,0 +1,18 @@
+# plugins/multi_sample_integration/config.yaml
+name: multi_sample_integration
+version: "1.0"
+description: "多样本整合与批次校正"
+methods:
+  - harmony
+  - bbknn
+  - liger
+input:
+  - type: anndata
+    required: true
+    multiple: true
+    description: "多个样本的注释后AnnData数据"
+output:
+  - type: anndata
+    path: "results/integrated/integrated_adata.h5ad"
+  - type: figure
+    path: "results/integrated/visualization/integration_comparison.png"
