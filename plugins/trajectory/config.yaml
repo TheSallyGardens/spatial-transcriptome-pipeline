@@ -1,0 +1,17 @@
+# plugins/trajectory/config.yaml
+name: trajectory
+version: "1.0"
+description: "空间轨迹分析"
+methods:
+  - paga
+  - monocle
+  - st_trajectory
+input:
+  - type: anndata
+    required: true
+    description: "带聚类结果的空间转录组数据"
+output:
+  - type: anndata
+    path: "{result_dir}/data/trajectory_adata.h5ad"
+  - type: figure
+    path: "{result_dir}/visualization/trajectory_{method}.png"
