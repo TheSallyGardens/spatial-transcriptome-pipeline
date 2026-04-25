@@ -6,12 +6,43 @@ methods:
   - morans_i
   - spark
   - lisa
+
+method_descriptions:
+  morans_i: |
+    Moran's I: 经典空间自相关度量
+    安装: pip install esda (用于统计检验)
+
+  spark: |
+    SPARK: 专门为空间转录组设计的统计方法
+    安装: pip install SPARK
+
+  lisa: |
+    LISA: 局部空间自相关度量
+    安装: 内置实现
+
+required_packages:
+  python:
+    - scanpy>=1.9.0
+    - anndata>=0.8.0
+    - pandas>=1.5.0
+    - numpy>=1.23.0
+    - scipy>=1.9.0
+    - scikit-learn>=1.2.0
+  optional:
+    - esda: pip install esda  # 用于Moran's I统计检验
+    - SPARK: pip install SPARK  # 完整SPARK实现
+
 input:
   - type: anndata
     required: true
     description: "标准化后的空间转录组数据"
+
 output:
   - type: anndata
     path: "{result_dir}/data/spatial_variable_genes_adata.h5ad"
   - type: figure
     path: "{result_dir}/visualization/spatial_variable_genes_{method}.png"
+
+default_params:
+  n_permutations: 100
+  n_top_genes: 200

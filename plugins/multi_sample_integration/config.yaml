@@ -6,13 +6,51 @@ methods:
   - harmony
   - bbknn
   - liger
+  - scanorama
+
+method_descriptions:
+  harmony: |
+    Harmony: 成熟的批次校正方法
+    安装: pip install harmonypy
+
+  bbknn: |
+    BBKNN: 基于邻居的批次校正
+    安装: pip install bbknn
+
+  liger: |
+    LIGER: 基于NMF的整合方法
+    安装: pip install rliger
+
+  scanorama: |
+    SCANORAMA: 基于表达矩阵对齐的整合
+    安装: pip install scanorama
+
+required_packages:
+  python:
+    - scanpy>=1.9.0
+    - anndata>=0.8.0
+    - pandas>=1.5.0
+    - numpy>=1.23.0
+    - scikit-learn>=1.2.0
+  optional:
+    - harmonypy: pip install harmonypy
+    - bbknn: pip install bbknn
+    - rliger: pip install rliger
+    - scanorama: pip install scanorama
+
 input:
   - type: anndata
     required: true
     multiple: true
     description: "多个样本的注释后AnnData数据"
+
 output:
   - type: anndata
     path: "results/integrated/integrated_adata.h5ad"
   - type: figure
     path: "results/integrated/visualization/integration_comparison.png"
+
+default_params:
+  theta: 2.0
+  max_iter: 20
+  n_neighbors: 15

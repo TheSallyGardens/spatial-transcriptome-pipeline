@@ -6,12 +6,44 @@ methods:
   - paga
   - monocle
   - st_trajectory
+
+method_descriptions:
+  paga: |
+    PAGA: 基于图的轨迹推断方法 (Scanpy内置)
+    安装: pip install scanpy (已包含)
+
+  monocle: |
+    Monocle3: 专门的单细胞轨迹分析工具
+    安装:
+    - Python: pip install monocle3
+    - R: install.packages('monocle3')
+
+  st_trajectory: |
+    ST trajectory: 空间感知轨迹分析
+    专门为空间转录组设计
+
+required_packages:
+  python:
+    - scanpy>=1.9.0
+    - anndata>=0.8.0
+    - pandas>=1.5.0
+    - numpy>=1.23.0
+    - scipy>=1.9.0
+    - scikit-learn>=1.2.0
+  R:
+    - Monocle3: install.packages('monocle3')
+
 input:
   - type: anndata
     required: true
     description: "带聚类结果的空间转录组数据"
+
 output:
   - type: anndata
     path: "{result_dir}/data/trajectory_adata.h5ad"
   - type: figure
     path: "{result_dir}/visualization/trajectory_{method}.png"
+
+default_params:
+  cluster_res: 0.5
+  paga_thresh: 0.1
