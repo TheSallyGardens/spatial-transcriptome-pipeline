@@ -1,0 +1,17 @@
+# plugins/cell_communication/config.yaml
+name: cell_communication
+version: "1.0"
+description: "细胞间通讯分析"
+methods:
+  - cellchat
+  - squidpy
+  - nichenet
+input:
+  - type: anndata
+    required: true
+    description: "带细胞注释的空间转录组数据"
+output:
+  - type: anndata
+    path: "{result_dir}/data/cellchat_adata.h5ad"
+  - type: figure
+    path: "{result_dir}/visualization/cell_communication_{method}.png"
