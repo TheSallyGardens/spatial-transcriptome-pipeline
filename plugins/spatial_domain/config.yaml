@@ -6,12 +6,43 @@ methods:
   - spagcn
   - bayespace
   - stlearn
+
+method_descriptions:
+  spagcn: |
+    SpaGCN: 基于图神经网络的深度学习方法
+    需要: pip install torch
+    参数:
+      - resolution: 聚类数量 (默认0.5 -> 5个类)
+      - n_pcs: PCA维度 (默认50)
+      - alpha: 平滑因子 (默认0.5)
+      - epochs: 训练轮数 (默认200)
+      - hidden_dims: 隐藏层维度 (默认[128, 64])
+      - p: dropout概率 (默认0.05)
+
+  bayespace: |
+    BayesSpace: 贝叶斯空间聚类方法
+    需要: R环境 + BayesSpace R包
+    install: remotes::install_github("edward130603/BayesSpace")
+
+  stlearn: |
+    STlearn: 空间转录组学习工具
+    需要: pip install stlearn
+
 input:
   - type: anndata
     required: true
-    description: "带空间坐标的空间转录组数据"
+    description: "带空间坐标的空间转录组数据 (obsm['spatial'])"
+
 output:
   - type: anndata
     path: "{result_dir}/data/spatial_domain_adata.h5ad"
   - type: figure
     path: "{result_dir}/visualization/spatial_domain_{method}.png"
+
+default_params:
+  resolution: 0.5
+  n_pcs: 50
+  alpha: 0.5
+  epochs: 200
+  hidden_dims: [128, 64]
+  p: 0.05
