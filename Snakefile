@@ -13,5 +13,4 @@ include: "workflow/rules/report.smk"
 
 rule all:
     input:
-        expand("results/{sample}/reports/analysis_report.html",
-               sample=[s["id"] for s in config["samples"]])
+        "results/reports/analysis_report.html"

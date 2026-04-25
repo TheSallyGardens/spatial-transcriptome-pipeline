@@ -8,4 +8,4 @@ rule generate_report:
     conda:
         "../envs/scanpy.yaml"
     script:
-        "../../scripts/report.py"
+        "../../workflow/scripts/report.py"

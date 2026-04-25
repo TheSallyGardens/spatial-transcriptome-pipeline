@@ -10,9 +10,9 @@ rule plot_spatial_clustering:
         plot_type="spatial",
         color_by="louvain"
     conda:
-        "../../envs/scanpy.yaml"
+        "../envs/scanpy.yaml"
     script:
-        "../../scripts/visualization.py"
+        "../../workflow/scripts/visualization.py"
 
 # 细胞类型空间分布图
 rule plot_spatial_celltype:
@@ -24,9 +24,9 @@ rule plot_spatial_celltype:
         plot_type="spatial",
         color_by="cell_type"
     conda:
-        "../../envs/scanpy.yaml"
+        "../envs/scanpy.yaml"
     script:
-        "../../scripts/visualization.py"
+        "../../workflow/scripts/visualization.py"
 
 # UMAP图
 rule plot_umap:
@@ -38,9 +38,9 @@ rule plot_umap:
         plot_type="umap",
         color_by="louvain"
     conda:
-        "../../envs/scanpy.yaml"
+        "../envs/scanpy.yaml"
     script:
-        "../../scripts/visualization.py"
+        "../../workflow/scripts/visualization.py"
 
 # 空间域分布图
 rule plot_spatial_domain:
@@ -52,6 +52,6 @@ rule plot_spatial_domain:
         plot_type="spatial",
         color_by="spatial_domain"
     conda:
-        "../../envs/scanpy.yaml"
+        "../envs/scanpy.yaml"
     script:
-        "../../scripts/visualization.py"
+        "../../workflow/scripts/visualization.py"
