@@ -45,5 +45,6 @@ if __name__ == "__snakemake__":
     adata = normalize_total(adata)
     adata = log_transform(adata)
     adata = highly_variable_genes(adata)
+    adata = scale_data(adata)
 
     adata.write_h5ad(output_file)
