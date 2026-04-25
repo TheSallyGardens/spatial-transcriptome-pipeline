@@ -1,0 +1,12 @@
+# envs/spagcn.yaml
+name: spagcn
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.10
+  - scanpy
+  - scipy
+  - scikit-learn
+  - pandas
+  - numpy
