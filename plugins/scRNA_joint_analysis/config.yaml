@@ -1,0 +1,20 @@
+# plugins/scRNA_joint_analysis/config.yaml
+name: scRNA_joint_analysis
+version: "1.0"
+description: "与单细胞RNA-seq联合分析"
+methods:
+  - seurat
+  - cell2location
+  - spatialglue
+input:
+  - type: anndata
+    required: true
+    description: "空间转录组数据"
+  - type: anndata
+    required: false
+    description: "单细胞RNA-seq参考数据"
+output:
+  - type: anndata
+    path: "{result_dir}/data/scRNA_joint_adata.h5ad"
+  - type: figure
+    path: "{result_dir}/visualization/scRNA_joint_{method}.png"
