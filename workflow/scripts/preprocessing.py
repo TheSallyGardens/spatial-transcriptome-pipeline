@@ -32,19 +32,38 @@ def scale_data(adata):
 if __name__ == "__snakemake__":
     input_file = snakemake.input[0]
     output_file = snakemake.output[0]
+    rule_name = snakemake.rule
     sample_config = config["samples"][snakemake.wildcards["sample"]]
 
     adata = ad.read_h5ad(input_file)
     filter_config = sample_config.get("config", {})
 
-    adata = filter_cells_and_genes(
-        adata,
-        min_genes=filter_config.get("min_genes", 200),
-        min_cells=filter_config.get("min_cells", 50)
-    )
-    adata = normalize_total(adata)
-    adata = log_transform(adata)
-    adata = highly_variable_genes(adata)
-    adata = scale_data(adata)
+    if rule_name == "filter_cells":
+        # 只做过滤
+        adata = filter_cells_and_genes(
+            adata,
+            min_genes=filter_config.get("min_genes", 200),
+            min_cells=filter_config.get("min_cells", 50)
+        )
+    elif rule_name == "normalize_data":
+        # 过滤 + 归一化 + log + HVG
+        adata = filter_cells_and_genes(
+            adata,
+            min_genes=filter_config.get("min_genes", 200),
+            min_cells=filter_config.get("min_cells", 50)
+        )
+        adata = normalize_total(adata)
+        adata = log_transform(adata)
+        adata = highly_variable_genes(adata)
+    else:
+        # 默认执行完整流程
+        adata = filter_cells_and_genes(
+            adata,
+            min_genes=filter_config.get("min_genes", 200),
+            min_cells=filter_config.get("min_cells", 50)
+        )
+        adata = normalize_total(adata)
+        adata = log_transform(adata)
+        adata = highly_variable_genes(adata)
 
     adata.write_h5ad(output_file)
