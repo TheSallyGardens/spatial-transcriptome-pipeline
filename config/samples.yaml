@@ -1,0 +1,14 @@
+samples:
+  - id: sample1
+    platform: 10x_visium
+    input_dir: "data/sample1"
+    config:
+      min_genes: 200
+      min_cells: 50
+
+  - id: sample2
+    platform: stereo_seq
+    input_dir: "data/sample2"
+    config:
+      min_genes: 200
+      min_cells: 50

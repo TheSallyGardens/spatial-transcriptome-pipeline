@@ -1,0 +1,46 @@
+project:
+  name: "spatial_transcriptome_pipeline"
+  author: "user"
+  date: "2026-04-25"
+
+mamba:
+  env_dir: "envs"
+  create_env: true
+
+plugins:
+  - name: spatial_domain
+    enabled: true
+    method: spagcn
+    params:
+      resolution: 0.5
+      n_pcs: 50
+
+  - name: cell_communication
+    enabled: true
+    method: squidpy
+    params:
+      min_cells: 10
+
+  - name: trajectory
+    enabled: true
+    method: paga
+    params:
+      cluster_res: 0.5
+
+  - name: spatial_variable_genes
+    enabled: true
+    method: morans_i
+    params:
+      n_permutations: 100
+
+  - name: multi_sample_integration
+    enabled: true
+    method: harmony
+    params:
+      theta: 2.0
+
+  - name: scRNA_joint_analysis
+    enabled: false
+    method: seurat
+    params:
+      reference: "panglaodb"
