@@ -17,20 +17,46 @@ def load_10x_visium(sample_id, input_dir):
     return adata
 
 def load_stereo_seq(sample_id, input_dir):
-    """加载Stereo-seq标准输出数据 (STA格式)"""
-    # Stereo-seq STA格式: bin矩阵 + 空间坐标
-    sta_file = Path(input_dir) / "STA.txt"
+    """
+    加载Stereo-seq GEF格式数据
 
-    # 读取STA文件
-    positions = []
-    with open(sta_file, 'r') as f:
-        for line in f:
-            cols = line.strip().split('\t')
-            positions.append([int(cols[0]), int(cols[1]), float(cols[2]), float(cols[3])])
+    Stereo-seq使用GEF (Gene Expression File)格式存储表达矩阵和空间坐标。
+    需要安装Stereopy: pip install stereopy
 
-    # 读取表达矩阵
-    adata = sc.read_csv(Path(input_dir) / "matrix.csv")
-    adata.obsm["spatial"] = positions
+    华大官方分析流程会产生gef格式文件，读取方式:
+    -gef文件: 包含表达矩阵和空间坐标的二进制文件
+
+    安装: pip install stereopy
+    """
+    try:
+        import stereopy as st
+    except ImportError:
+        raise ImportError(
+            "Stereopy is required to read Stereo-seq GEF format. "
+            "Install with: pip install stereopy"
+        )
+
+    # GEF文件路径
+    gef_file = Path(input_dir)
+    if gef_file.is_dir():
+        # 如果input_dir是目录，查找gef文件
+        gef_files = list(gef_file.glob("*.gef"))
+        if gef_files:
+            gef_file = gef_files[0]
+        else:
+            raise FileNotFoundError(
+                f"No .gef file found in {input_dir}. "
+                "Please provide the path to a GEF file or a directory containing a .gef file."
+            )
+
+    # 使用Stereopy读取GEF文件
+    # st.io.read_gef() 返回AnnData对象
+    adata = st.io.read_gef(str(gef_file))
+
+    # Stereopy返回的AnnData通常包含:
+    # - X: 表达矩阵
+    # - obsm['spatial']: 空间坐标
+    # - var: 基因信息
 
     adata.uns["sample_id"] = sample_id
     adata.uns["platform"] = "stereo_seq"

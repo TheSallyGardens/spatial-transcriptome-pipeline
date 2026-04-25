@@ -23,6 +23,9 @@ mamba install -c conda-forge -c bioconda \
     scipy \
     scikit-learn \
     pysodb
+
+# Stereo-seq数据读取 (GEF格式)
+pip install stereopy
 ```
 
 ---
