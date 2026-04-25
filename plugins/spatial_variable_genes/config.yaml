@@ -1,0 +1,17 @@
+# plugins/spatial_variable_genes/config.yaml
+name: spatial_variable_genes
+version: "1.0"
+description: "识别空间变量基因"
+methods:
+  - morans_i
+  - spark
+  - lisa
+input:
+  - type: anndata
+    required: true
+    description: "标准化后的空间转录组数据"
+output:
+  - type: anndata
+    path: "{result_dir}/data/spatial_variable_genes_adata.h5ad"
+  - type: figure
+    path: "{result_dir}/visualization/spatial_variable_genes_{method}.png"
