@@ -1,0 +1,61 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Snakemake
+.snakemake/
+.snakemake.lock
+*.snakemake.log
+cluster_logs/
+
+# R / Seurat
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Conda / Mamba
+.conda/
+conda-pack/
+*.tar.bz2
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Project outputs
+results/
+data/
+*.h5
+*.h5ad
+*.loom
+*.rds
+*.RDS
+*.pdf
+!docs/**/*.pdf
+
+# Logs
+logs/
+*.log
+
+.ssh/
+
+.ssh/id_ed25519
