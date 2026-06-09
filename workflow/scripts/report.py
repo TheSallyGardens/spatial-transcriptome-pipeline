@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # workflow/scripts/report.py
 import scanpy as sc
 from pathlib import Path

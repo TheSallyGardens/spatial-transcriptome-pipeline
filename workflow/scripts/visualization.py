@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # workflow/scripts/visualization.py
 import scanpy as sc
 import squidpy as sq

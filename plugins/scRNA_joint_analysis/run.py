@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # plugins/scRNA_joint_analysis/run.py
 import scanpy as sc
 import anndata as ad

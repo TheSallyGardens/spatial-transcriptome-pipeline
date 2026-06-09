@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # plugins/spatial_variable_genes/run.py
 import scanpy as sc
 import anndata as ad

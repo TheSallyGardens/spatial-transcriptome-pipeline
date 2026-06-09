@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # tests/test_end_to_end.py
 import pytest
 import scanpy as sc

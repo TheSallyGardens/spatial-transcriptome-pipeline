@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # plugins/cell_communication/run.py
 import scanpy as sc
 import anndata as ad

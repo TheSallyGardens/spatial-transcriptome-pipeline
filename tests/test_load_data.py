@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # tests/test_load_data.py
 import pytest
 from pathlib import Path

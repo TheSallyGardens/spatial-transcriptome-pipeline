@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # workflow/scripts/preprocessing.py
 import scanpy as sc
 import anndata as ad
