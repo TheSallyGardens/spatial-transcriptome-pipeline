@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spstpipe"
+version = "0.1.0"
+description = "空间转录组分析流水线（插件化）"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "TheSallyGardens" }]
+dependencies = [
+    "anndata>=0.10",
+    "scanpy>=1.10",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pydantic>=2.5",
+    "typer>=0.12",
+    "loguru>=0.7",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=4",
+    "mypy>=1.8",
+    "ruff>=0.3",
+    "pre-commit>=3.6",
+    "types-PyYAML",
+]
+torch = ["torch>=2.1"]
+r-seurat = ["rpy2>=3.5"]
+spatial = ["squidpy>=1.6"]
+
+[project.scripts]
+spstpipe = "spstpipe.cli:app"
+
+[project.entry-points."spstpipe.plugins"]
+spatial_domain = "spstpipe.plugins.spatial_domain.plugin:SpatialDomainPlugin"
+cell_communication = "spstpipe.plugins.cell_communication.plugin:CellCommunicationPlugin"
+trajectory = "spstpipe.plugins.trajectory.plugin:TrajectoryPlugin"
+spatial_variable_genes = "spstpipe.plugins.spatial_variable_genes.plugin:SpatialVariableGenesPlugin"
+multi_sample_integration = "spstpipe.plugins.multi_sample_integration.plugin:MultiSampleIntegrationPlugin"
+scrna_joint_analysis = "spstpipe.plugins.scrna_joint_analysis.plugin:ScRNAJointAnalysisPlugin"
+
+[project.entry-points."spstpipe.test_plugins"]
+synthetic = "tests.fixtures.synthetic_plugin.plugin:SyntheticPlugin"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spstpipe"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+markers = [
+    "slow: 跑得慢的测试（默认跳过）",
+    "torch: 需要 torch",
+    "r_seurat: 需要 rpy2",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/spstpipe"]
+warn_unused_ignores = true
