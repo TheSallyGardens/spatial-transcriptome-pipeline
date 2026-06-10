@@ -1,6 +1,8 @@
 ﻿# spstpipe · 空间转录组分析流水线
 
 > 基于 Snakemake + Python 插件化架构的空间转录组分析流水线，支持 10x Visium 和 Stereo-seq 数据。
+>
+> [English Version](README.en.md) | 简体中文（本文件）
 
 [![CI](https://github.com/TheSallyGardens/spatial-transcriptome-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/TheSallyGardens/spatial-transcriptome-pipeline/actions)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)

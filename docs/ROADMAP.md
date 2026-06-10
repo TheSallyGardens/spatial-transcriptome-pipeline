@@ -41,7 +41,11 @@
   - 限制：谱聚类 `precomputed` affinity 在 50000×50000 需要 18.6 GiB（OOM），属算法限制
   - 实际建议规模：20000 spots × 5000 genes 4.8 分钟（仍在可接受范围）
 - ⏳ 1.0.0-4：发布到 PyPI：`pip install spstpipe`（需要 PyPI 账号 + trusted publishing）
-- ⏳ 1.0.0-5：完整中英双语文档（README/API.md/usage 各加 EN 翻译）
+- ✅ 1.0.0-5：中英双语（核心文档）
+  - README.en.md（英文版 README）
+  - docs/usage.en.md（英文 usage）
+  - docs/API.zh.md（中文 API）
+  - 中文 README / usage 顶部加英文链接
 - ⏳ 1.0.0-6：CHANGELOG 1.0.0 条目
 - ⏳ 1.0.0-7：FINAL_REPORT 1.0 收尾
 

@@ -172,6 +172,8 @@ my_plugin = "spstpipe.plugins.my_plugin.plugin:MyPlugin"
 
 ```python
 # tests/unit/test_my_plugin.py
+
+> [English Version](usage.en.md) | 简体中文（本文件）
 from spstpipe.plugins.my_plugin.plugin import MyPlugin
 
 
