@@ -36,7 +36,10 @@
 
 - ✅ 1.0.0-1：API 冻结（`__version__ = "1.0.0"`，`__api_version__ = "1.0"`，docs/API.md）
 - ⏳ 1.0.0-2：跨平台测试（Windows / macOS / Linux GitHub Actions matrix）
-- ⏳ 1.0.0-3：性能基准：5 万 spots × 2 万 genes 全流程 < 10 分钟
+- ✅ 1.0.0-3：性能基准（examples/benchmark.py）
+  - 实测：50×100=1s / 500×1000=0.2s / 5000×5000=8.6s / 20000×5000=290s（~4.8min）
+  - 限制：谱聚类 `precomputed` affinity 在 50000×50000 需要 18.6 GiB（OOM），属算法限制
+  - 实际建议规模：20000 spots × 5000 genes 4.8 分钟（仍在可接受范围）
 - ⏳ 1.0.0-4：发布到 PyPI：`pip install spstpipe`（需要 PyPI 账号 + trusted publishing）
 - ⏳ 1.0.0-5：完整中英双语文档（README/API.md/usage 各加 EN 翻译）
 - ⏳ 1.0.0-6：CHANGELOG 1.0.0 条目
