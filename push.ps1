@@ -1,19 +1,26 @@
 ﻿<#
 .SYNOPSIS
-  Push the local repo to GitHub via SSH.
+  把本地仓库推到 GitHub（用 SSH v3 key）。
 
 .DESCRIPTION
-  Idempotent push helper for the spatial-transcriptome-pipeline repo.
-  Uses the SSH key that lives in ./.ssh/id_ed25519 (already added to the
-  GitHub account by the user).
+  这个脚本使用项目内 .ssh/id_ed25519_v3 私钥。
+  GitHub 账户里必须已经加过 v3 公钥（指纹 SHA256:1CZyNQw37knlHeJBjvKPaX206t/0BAPFenoWO4nTcRM，标题 codex-2026-06-09）。
 
-  Run this in PowerShell 5+ (Windows PowerShell) or PowerShell 7+.
+  在你自己 PowerShell 窗口里跑（不是 Codex 内置终端）：
 
-  First run will add GitHub to known_hosts (under your user profile).
-  If git complains about line-ending warnings, that is normal on Windows.
+    Set-Location -LiteralPath ''D:\project\spatial-transcriptome-pipeline-main''
+    .\push.ps1
+
+  脚本会：
+    1. 自检 .git / .ssh\id_ed25519_v3 / 远端
+    2. 打印 ahead / behind / dirty 状态
+    3. 设置 core.sshCommand 永久指 v3 私钥
+    4. 用 ssh -T 探测认证
+    5. 必要时 git pull --rebase --autostash
+    6. git push -u origin main
 #>
 
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = ''Stop''
 Set-Location -LiteralPath $PSScriptRoot
 
 function Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
@@ -23,28 +30,28 @@ function Fail($msg) { Write-Host "    [X]  $msg" -ForegroundColor Red }
 
 # ---- 1. Preflight -----------------------------------------------------------
 Step "Preflight checks"
-if (-not (Test-Path -LiteralPath '.git')) {
+if (-not (Test-Path -LiteralPath ''.git'')) {
     Fail "Not a git repository (missing .git). Run this from the project root."
     exit 1
 }
-if (-not (Test-Path -LiteralPath '.ssh\id_ed25519')) {
-    Fail "Missing .ssh\id_ed25519. The agent should have placed it here."
+if (-not (Test-Path -LiteralPath ''.ssh\id_ed25519_v3'')) {
+    Fail "Missing .ssh\id_ed25519_v3. The agent should have placed it here."
     exit 1
 }
-if (-not (Test-Path -LiteralPath '.ssh\id_ed25519.pub')) {
-    Fail "Missing .ssh\id_ed25519.pub (public key)."
+if (-not (Test-Path -LiteralPath ''.ssh\id_ed25519_v3.pub'')) {
+    Fail "Missing .ssh\id_ed25519_v3.pub (public key)."
     exit 1
 }
-Ok "Repo and SSH key present."
+Ok "Repo and SSH key (v3) present."
 
-# ---- 2. Show repo state -----------------------------------------------------
+# ---- 2. Repo state ---------------------------------------------------------
 Step "Repo state"
 git rev-parse --is-inside-work-tree | Out-Null
 $branch  = (git rev-parse --abbrev-ref HEAD).Trim()
 $remote  = (git remote get-url origin 2>$null)
-$status  = (git status --porcelain)
 $ahead   = (git rev-list --count "origin/$branch..$branch" 2>$null)
 $behind  = (git rev-list --count "$branch..origin/$branch" 2>$null)
+$status  = (git status --porcelain)
 
 Write-Host "    Branch : $branch"
 Write-Host "    Remote : $remote"
@@ -52,40 +59,29 @@ Write-Host "    Ahead  : $ahead commit(s) ahead of origin/$branch"
 Write-Host "    Behind : $behind commit(s) behind origin/$branch"
 if ($status) { Warn "Working tree is dirty:" ; $status | ForEach-Object { Write-Host "           $_" } }
 
-# ---- 3. Tell git to use the project-local SSH config + key -----------------
-# The key already corresponds to a public key on the GitHub account.
-# Pin IdentityFile explicitly so OpenSSH never falls back to a wrong key.
-Step "Configuring git core.sshCommand"
-$keyPath  = (Resolve-Path '.ssh\id_ed25519').Path
-$confPath = (Resolve-Path '.ssh\config').Path
-$sshCmd   = "ssh -i `"$keyPath`" -F `"$confPath`" -o IdentitiesOnly=yes -o UserKnownHostsFile=`"$PSScriptRoot\.ssh\known_hosts`" -o StrictHostKeyChecking=accept-new"
+# ---- 3. Set core.sshCommand to v3 key -------------------------------------
+$keyPath  = (Resolve-Path ''.ssh\id_ed25519_v3'').Path
+$confPath = (Resolve-Path ''.ssh\config'').Path
+$knownHosts = Join-Path $PSScriptRoot ''.ssh\known_hosts''
+
+Step "Configuring git core.sshCommand (v3 key)"
+$sshCmd = "ssh -i `"$keyPath`" -F `"$confPath`" -o IdentitiesOnly=yes -o UserKnownHostsFile=`"$knownHosts`" -o StrictHostKeyChecking=accept-new"
 git config core.sshCommand $sshCmd
 Ok "core.sshCommand set."
 
-# ---- 4. Quick connectivity probe (non-destructive) -------------------------
+# ---- 4. Quick connectivity probe ------------------------------------------
 Step "Testing SSH authentication to github.com"
-$probe = ssh -i $keyPath -F $confPath -o IdentitiesOnly=yes -o UserKnownHostsFile="$PSScriptRoot\.ssh\known_hosts" -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1
-if ($LASTEXITCODE -ne 0 -and $probe -notmatch "successfully authenticated") {
-    Warn "Probe returned non-zero. Output:"
+$probe = ssh -i $keyPath -F $confPath -o IdentitiesOnly=yes -o UserKnownHostsFile="$knownHosts" -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1
+if ($probe -match "successfully authenticated") {
+    Ok "GitHub acknowledged the v3 key."
+} else {
+    Warn "Probe did not show a clean success line:"
     $probe | ForEach-Object { Write-Host "           $_" }
     $ans = Read-Host "    Continue anyway? (y/N)"
-    if ($ans -ne 'y') { Fail "Aborted by user." ; exit 1 }
-} elseif ($probe -match "successfully authenticated") {
-    Ok "GitHub acknowledged the key."
-} else {
-    Warn "Probe did not show a clean success line. Continuing cautiously."
+    if ($ans -ne ''y'') { Fail "Aborted by user." ; exit 1 }
 }
 
-# ---- 5. Make sure the local branch tracks origin/$branch -------------------
-Step "Ensuring upstream tracking"
-try {
-    $up = (git rev-parse --abbrev-ref --symbolic-full-name "@{u}" 2>$null)
-    if ($up) { Ok "Already tracking $up" } else { throw "no upstream" }
-} catch {
-    Write-Host "    No upstream set; will use: git push -u origin $branch"
-}
-
-# ---- 6. Pull (rebase) if behind, then push ---------------------------------
+# ---- 5. Pull (rebase) if behind, then push --------------------------------
 if ($behind -gt 0) {
     Step "Pulling $behind commit(s) from origin/$branch with rebase"
     git pull --rebase --autostash origin $branch
