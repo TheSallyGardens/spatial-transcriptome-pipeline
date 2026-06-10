@@ -18,7 +18,7 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
 
-  test-fast:
+  mypy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,4 +26,16 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -e ".[dev]"
-      - run: pytest --no-cov -q
+      - name: mypy --strict
+        run: mypy src
+
+  test-fast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev,spatial]"
+      - name: pytest (fast - 不跑 slow 标记的测试)
+        run: pytest --no-cov -q -m "not slow"
