@@ -93,5 +93,6 @@ module = [
     "sklearn",
     "sklearn.cluster",
     "loguru",
+    "squidpy",
 ]
 ignore_missing_imports = true

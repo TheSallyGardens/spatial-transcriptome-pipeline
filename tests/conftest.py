@@ -18,6 +18,7 @@ _SANDBOX_TEMP_BROKEN = False
 if sys.platform == "win32":
     try:
         import getpass
+
         user = getpass.getuser()
         # pytest 9 tmp_path 用 pytest-of-{user} 子目录，必须测这个
         probe_dir = Path(tempfile.gettempdir()) / ("pytest-of-" + user)
