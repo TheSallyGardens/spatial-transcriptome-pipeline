@@ -66,7 +66,7 @@ ignore = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra -q"
+addopts = "-ra -q -m \"not slow\"" # 慢测试用 marker slow 标记，加 -m \\"not slow\\" 由调用方加
 cache_dir = ".pytest_tmp/cache"
 testpaths = ["tests"]
 pythonpath = ["src", "tests"]

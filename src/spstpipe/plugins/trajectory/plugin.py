@@ -4,16 +4,23 @@ from __future__ import annotations
 from pathlib import Path
 
 import anndata as ad
-import numpy as np
 
 from spstpipe.core.base import BasePlugin
 from spstpipe.core.io import load_anndata, save_anndata
+from spstpipe.plugins.trajectory.algorithms import (
+    run_trajectory,
+)
 
 
 class TrajectoryPlugin(BasePlugin):
-    """trajectory 插件。
+    """轨迹推断插件（PAGA + DPT）。
 
-    支持方法：paga, monocle, spatial_trajectory（默认 paga，重依赖方法用占位逻辑）。
+    支持方法：
+      - paga : PAGA + DPT（默认，scanpy 真方法，依赖硬装）
+      - paga_placeholder : 占位（随机伪时间，零依赖也能跑）
+
+    任何 paga 方法名都走 run_trajectory() 入口，
+    内部按 use_scanpy 参数决定真/占位。
     """
 
     name = "trajectory"
@@ -34,13 +41,8 @@ class TrajectoryPlugin(BasePlugin):
         return adata
 
     def run(self, adata: ad.AnnData) -> ad.AnnData:
-        # 所有方法当前用占位/默认逻辑
-        rng = np.random.default_rng(42)
-        if "pseudotime":
-            adata.obs["pseudotime"] = rng.integers(0, 3, size=adata.n_obs).astype(str)
-            adata.var["spatial_variable"] = rng.random(size=adata.n_vars)
-        adata.uns["trajectory_method"] = self.method
-        return adata
+        use_scanpy = bool(self.params.get("use_scanpy", True))
+        return run_trajectory(adata, use_scanpy=use_scanpy)
 
     def save(self, adata: ad.AnnData, path: Path) -> None:
         save_anndata(adata, path)
