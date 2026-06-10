@@ -1,138 +1,189 @@
-# 使用指南
+﻿# 使用说明
 
-## 环境准备
+## CLI 用法
 
-### 安装Miniforge3
+### `spstpipe list`
 
-推荐使用Miniforge3管理Conda环境：
-
-1. 下载Miniforge3: https://github.com/conda-forge/miniforge
-2. 安装: `bash Miniforge3-Linux-x86_64.sh`
-3. 初始化: `source ~/.bashrc`
-
-### 创建分析环境
+列出所有已注册的插件。
 
 ```bash
-# 主要Python环境
-mamba env create -f envs/scanpy.yaml
-
-# R环境（如需Seurat/CellChat）
-mamba env create -f envs/r-seurat.yaml
-
-# 激活环境
-mamba activate scanpy
+$ spstpipe list
+已注册 6 个插件：
+  - cell_communication             spstpipe.plugins.cell_communication.plugin:CellCommunicationPlugin  v0.1.0
+  - multi_sample_integration       spstpipe.plugins.multi_sample_integration.plugin:MultiSampleIntegrationPlugin  v0.1.0
+  - scrna_joint_analysis           spstpipe.plugins.scrna_joint_analysis.plugin:ScRNAJointAnalysisPlugin  v0.1.0
+  - spatial_domain                 spstpipe.plugins.spatial_domain.plugin:SpatialDomainPlugin  v0.1.0
+  - spatial_variable_genes         spstpipe.plugins.spatial_variable_genes.plugin:SpatialVariableGenesPlugin  v0.1.0
+  - trajectory                     spstpipe.plugins.trajectory.plugin:TrajectoryPlugin  v0.1.0
 ```
 
-## 数据准备
+### `spstpipe run <plugin>`
 
-### 10x Visium数据
+跑指定插件。
 
-将Space Ranger输出目录配置到 `samples.yaml`:
-
-```
-data/sample1/
-├── filtered_feature_bc_matrix/
-│   ├── matrix.mtx
-│   ├── barcodes.tsv.gz
-│   └── features.tsv.gz
-└── spatial/
-    ├── tissue_positions_list.csv
-    └── images/
+```bash
+spstpipe run <plugin> --input <input.h5ad> --output <output.h5ad>
 ```
 
-### Stereo-seq数据
+可选参数（未来）：
+- `--method` 覆盖插件默认方法
 
-配置STA格式数据:
+## Python API
 
-```
-data/sample2/
-├── STA.txt      # 空间坐标
-└── matrix.csv   # 表达矩阵
-```
+### 基础用法
 
-## 配置详解
+```python
+import anndata as ad
+from spstpipe.plugins.spatial_domain import SpatialDomainPlugin
 
-### samples.yaml
-
-```yaml
-samples:
-  - id: "样本ID"
-    platform: "10x_visium" | "stereo_seq"
-    input_dir: "数据目录路径"
-    config:
-      min_genes: 200      # 最小基因数
-      min_cells: 50      # 最小细胞数
-      max_genes: 5000     # 最大基因数（可选）
+adata = ad.read_h5ad("data/sample1.h5ad")
+plugin = SpatialDomainPlugin()
+result = plugin(adata)  # 等价于 plugin.run(adata)
+print(result.obs["spatial_domain"].value_counts())
 ```
 
-### config.yaml
+### 自定义参数
+
+```python
+plugin = SpatialDomainPlugin(method="spectral_clustering", resolution=0.8)
+result = plugin.run(adata)
+```
+
+### 完整流水线（load → preprocess → run → save）
+
+```python
+from pathlib import Path
+from spstpipe.core.io import load_anndata, save_anndata
+from spstpipe.plugins.spatial_domain import SpatialDomainPlugin
+
+adata = load_anndata("data/sample1.h5ad")
+plugin = SpatialDomainPlugin()
+preprocessed = plugin.preprocess(adata)
+result = plugin.run(preprocessed)
+save_anndata(result, "results/spatial_domain/sample1.h5ad")
+```
+
+## 通过 Snakemake 跑
+
+### Dry run（看 DAG 不真跑）
+
+```bash
+snakemake -n
+```
+
+### 完整跑
+
+```bash
+snakemake --use-conda -j 4
+```
+
+### 跑单个插件
+
+```bash
+snakemake run_spatial_domain
+```
+
+## 配置文件
+
+### `config/config.yaml`
 
 ```yaml
 project:
-  name: "项目名称"
-  author: "作者"
-  date: "日期"
+  name: "my_project"
+  author: "alice"
+  date: "2026-06-09"
+
+mamba:
+  env_dir: "envs"
+  create_env: true
 
 plugins:
-  - name: "插件名称"
-    enabled: true | false
-    method: "方法名"
+  - name: spatial_domain
+    enabled: true
+    method: spectral_clustering
     params:
-      key: value
+      resolution: 0.5
 ```
 
-## 运行模式
+### `config/samples.yaml`
 
-### 本地运行
+```yaml
+samples:
+  - id: sample1
+    platform: 10x_visium
+    input_dir: "data/sample1"
+    config:
+      min_genes: 200
+      min_cells: 50
+```
+
+## 添加新插件
+
+### 1. 创建插件目录
+
+```
+src/spstpipe/plugins/my_plugin/
+├── __init__.py
+├── plugin.py
+└── algorithms.py
+```
+
+### 2. 实现 `plugin.py`
+
+```python
+from __future__ import annotations
+from pathlib import Path
+import anndata as ad
+from spstpipe.core.base import BasePlugin
+from spstpipe.core.io import load_anndata, save_anndata
+
+
+class MyPlugin(BasePlugin):
+    name = "my_plugin"
+    version = "0.1.0"
+
+    def __init__(self, method: str = "default", **params):
+        self.method = method
+        self.params = params
+
+    def load(self, paths: list[Path]) -> ad.AnnData:
+        return load_anndata(paths[0])
+
+    def preprocess(self, adata: ad.AnnData) -> ad.AnnData:
+        return adata
+
+    def run(self, adata: ad.AnnData) -> ad.AnnData:
+        # 你的算法
+        adata.obs["my_result"] = ...
+        return adata
+
+    def save(self, adata: ad.AnnData, path: Path) -> None:
+        save_anndata(adata, path)
+```
+
+### 3. 在 `pyproject.toml` 注册 entry-point
+
+```toml
+[project.entry-points."spstpipe.plugins"]
+my_plugin = "spstpipe.plugins.my_plugin.plugin:MyPlugin"
+```
+
+### 4. 写测试
+
+```python
+# tests/unit/test_my_plugin.py
+from spstpipe.plugins.my_plugin.plugin import MyPlugin
+
+
+def test_my_plugin_能_跑():
+    from tests.fixtures.synthetic_adata import synthetic_adata
+    a = synthetic_adata()
+    out = MyPlugin().run(a)
+    assert "my_result" in out.obs.columns
+```
+
+### 5. 跑测试
 
 ```bash
-# 单线程
-snakemake --use-conda
-
-# 多线程
-snakemake --use-conda -j 4
-
-# 指定规则运行
-snakemake --use-conda results/sample1/data/filtered_adata.h5ad
+pytest tests/unit/test_my_plugin.py
 ```
-
-### 集群运行
-
-```bash
-# 使用SLURM
-snakemake --use-conda --cluster "sbatch -N 1 -n 1 -t 60" -j 32
-
-# 使用LSF
-snakemake --use-conda --cluster "bsub -q queue -n 1 -R span[hosts=1]" -j 32
-```
-
-## 结果解读
-
-### AnnData文件
-
-- `raw_adata.h5ad`: 原始数据
-- `filtered_adata.h5ad`: 过滤后数据
-- `normalized_adata.h5ad`: 归一化后数据
-- `clustered_adata.h5ad`: 聚类结果
-- `annotated_adata.h5ad`: 细胞注释结果
-
-### 可视化
-
-- `spatial_clustering.png`: 空间聚类图
-- `spatial_celltype.png`: 细胞类型空间分布
-- `umap.png`: UMAP降维图
-
-### 报告
-
-`results/reports/analysis_report.html`: HTML格式分析报告
-
-## 常见问题
-
-Q: 报`ModuleNotFoundError`？
-A: 确保已激活正确的conda环境
-
-Q: 内存不足？
-A: 减少并行任务数，或增大 `--resources mem=XXX`
-
-Q: 数据加载失败？
-A: 检查输入路径和数据格式是否正确
