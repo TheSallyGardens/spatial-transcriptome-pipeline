@@ -1,4 +1,5 @@
 """BasePlugin 抽象类的测试。"""
+
 from __future__ import annotations
 
 from abc import ABC
@@ -27,6 +28,7 @@ def test_BasePlugin_不能直接实例化():
 
 def test_BasePlugin_子类_必须实现所有抽象方法():
     """只实现部分抽象方法的子类应该还是抽象的。"""
+
     class 半成品(BasePlugin):
         def load(self, paths):
             return None  # type: ignore[return-value]

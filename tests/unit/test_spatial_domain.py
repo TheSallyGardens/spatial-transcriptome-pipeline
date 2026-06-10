@@ -1,8 +1,8 @@
 """spatial_domain 插件的测试。"""
+
 from __future__ import annotations
 
 import anndata as ad
-import numpy as np
 import pytest
 
 from spstpipe.core.registry import discover_plugins

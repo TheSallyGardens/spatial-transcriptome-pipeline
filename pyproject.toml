@@ -56,8 +56,14 @@ line-length = 100
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF"]
-ignore = ["E501"]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+ignore = [
+    "E501",   # 行长度由 formatter 控制
+    "RUF001", # ambiguous-unicode-character-string —— 中文项目常见误报
+    "RUF002", # ambiguous-unicode-character-docstring
+    "RUF003", # ambiguous-unicode-character-comment
+    "B008",   # typer.Option 官方推荐在默认值调，误报
+]
 
 [tool.pytest.ini_options]
 addopts = "-ra -q"
@@ -77,4 +83,15 @@ python_version = "3.11"
 strict = true
 files = ["src/spstpipe"]
 warn_unused_ignores = true
-
+[[tool.mypy.overrides]]
+module = [
+    "anndata",
+    "scanpy",
+    "scipy",
+    "scipy.spatial",
+    "scipy.sparse",
+    "sklearn",
+    "sklearn.cluster",
+    "loguru",
+]
+ignore_missing_imports = true

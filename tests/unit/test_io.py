@@ -1,8 +1,9 @@
 """IO 工具的测试。"""
+
 from __future__ import annotations
 
-from tests.fixtures.synthetic_adata import synthetic_adata
 from spstpipe.core.io import load_anndata, save_anndata
+from tests.fixtures.synthetic_adata import synthetic_adata
 
 
 def test_合成数据_基本形状():

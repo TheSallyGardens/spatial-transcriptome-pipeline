@@ -1,4 +1,5 @@
 """pydantic 配置模型的测试。"""
+
 from __future__ import annotations
 
 import pytest
@@ -37,7 +38,12 @@ def test_解析_完整配置():
         },
         "mamba": {"env_dir": "envs", "create_env": True},
         "plugins": [
-            {"name": "spatial_domain", "enabled": True, "method": "spagcn", "params": {"resolution": 0.5}},
+            {
+                "name": "spatial_domain",
+                "enabled": True,
+                "method": "spagcn",
+                "params": {"resolution": 0.5},
+            },
             {"name": "trajectory", "enabled": False, "method": "paga", "params": {}},
         ],
         "samples": [

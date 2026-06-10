@@ -25,7 +25,9 @@ class TrajectoryPlugin(BasePlugin):
 
     def load(self, paths: list[Path]) -> ad.AnnData:
         if len(paths) != 1:
-            raise ValueError(f"{self.__class__.__name__}.load 期望 1 个 h5ad 路径，实际 {len(paths)}")
+            raise ValueError(
+                f"{self.__class__.__name__}.load 期望 1 个 h5ad 路径，实际 {len(paths)}"
+            )
         return load_anndata(paths[0])
 
     def preprocess(self, adata: ad.AnnData) -> ad.AnnData:

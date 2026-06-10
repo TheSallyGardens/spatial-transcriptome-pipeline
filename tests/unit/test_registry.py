@@ -1,4 +1,5 @@
 """插件注册表的测试。"""
+
 from __future__ import annotations
 
 from spstpipe.core.base import BasePlugin

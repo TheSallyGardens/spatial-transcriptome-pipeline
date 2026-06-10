@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import anndata as ad
-import pytest
 
 from spstpipe.core.registry import discover_plugins
 from spstpipe.plugins.scrna_joint_analysis.plugin import ScRNAJointAnalysisPlugin

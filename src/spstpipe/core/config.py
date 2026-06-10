@@ -6,6 +6,7 @@ Schema 对应仓库根 config/config.yaml + config/samples.yaml：
   - plugins  : 启用的插件列表（每个含 method + params）
   - samples  : 样本列表（每个含 platform + input_dir + config）
 """
+
 from __future__ import annotations
 
 from pathlib import Path

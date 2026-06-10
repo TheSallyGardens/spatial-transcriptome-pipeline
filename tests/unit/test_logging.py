@@ -1,4 +1,5 @@
 """日志初始化的测试。"""
+
 from __future__ import annotations
 
 from spstpipe.core.logging import setup

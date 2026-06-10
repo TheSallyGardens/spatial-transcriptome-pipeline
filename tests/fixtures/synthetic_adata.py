@@ -1,5 +1,6 @@
-import numpy as np
 import anndata as ad
+import numpy as np
+
 
 def synthetic_adata(
     n_spots: int = 50,

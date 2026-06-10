@@ -1,4 +1,5 @@
 """测试用假插件 —— 给注册表测试用。"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -14,7 +15,7 @@ class SyntheticPlugin(BasePlugin):
     name = "synthetic"
     version = "0.0.1-test"
 
-    def load(self, paths: list[Path]) -> ad.AnnData:  # noqa: ARG002
+    def load(self, paths: list[Path]) -> ad.AnnData:
         import numpy as np
 
         return ad.AnnData(np.zeros((0, 0)))
@@ -26,5 +27,5 @@ class SyntheticPlugin(BasePlugin):
         adata.obs["synthetic_run"] = True
         return adata
 
-    def save(self, adata: ad.AnnData, path: Path) -> None:  # noqa: ARG002
+    def save(self, adata: ad.AnnData, path: Path) -> None:
         path.write_text("synthetic", encoding="utf-8")

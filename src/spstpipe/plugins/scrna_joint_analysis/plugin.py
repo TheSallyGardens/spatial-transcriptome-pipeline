@@ -25,7 +25,9 @@ class ScRNAJointAnalysisPlugin(BasePlugin):
 
     def load(self, paths: list[Path]) -> ad.AnnData:
         if len(paths) != 1:
-            raise ValueError(f"{self.__class__.__name__}.load 期望 1 个 h5ad 路径，实际 {len(paths)}")
+            raise ValueError(
+                f"{self.__class__.__name__}.load 期望 1 个 h5ad 路径，实际 {len(paths)}"
+            )
         return load_anndata(paths[0])
 
     def preprocess(self, adata: ad.AnnData) -> ad.AnnData:
@@ -34,11 +36,7 @@ class ScRNAJointAnalysisPlugin(BasePlugin):
     def run(self, adata: ad.AnnData) -> ad.AnnData:
         # 所有方法当前用占位/默认逻辑
         rng = np.random.default_rng(42)
-        if "predicted_cell_type":
-            adata.obs["predicted_cell_type"] = rng.integers(0, 3, size=adata.n_obs).astype(str)
-        if "predicted_cell_type" is None and "scrna_joint_analysis" == "spatial_variable_genes":
-            # 写到 var
-            adata.var["spatial_variable"] = rng.random(size=adata.n_vars)
+        adata.obs["predicted_cell_type"] = rng.integers(0, 3, size=adata.n_obs).astype(str)
         adata.uns["scrna_joint_analysis_method"] = self.method
         return adata
 

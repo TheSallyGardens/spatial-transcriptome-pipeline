@@ -8,6 +8,7 @@
 
 __call__ 直接代理到 run(adata)，让插件实例可以当函数用。
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

@@ -1,4 +1,4 @@
-﻿# 重构最终报告
+# 重构最终报告
 
 ## 项目
 
@@ -148,3 +148,25 @@ D:\project\spatial-transcriptome-pipeline-main\
 - BasePlugin 测试 = 5
 - 合成数据测试 = 3
 - **总计 43 测试，100% 通过**
+
+## 0.2.0 进展（卫生硬化）
+
+在 0.1.0 架构现代化基础上做的二次硬化：
+
+- ✅ `ruff format` 统一 41 个文件格式
+- ✅ `mypy --strict` 通过（0 errors / 22 source files）：修了 18 个类型问题
+- ✅ 修 `conftest.py` sandbox 探测：检测 `pytest-of-{user}` 子目录（根 Temp 可写但 pytest 9 创建的子目录被 DACL 拒绝）
+- ✅ 新 `CONTRIBUTING.md`（中文）：开发环境、跑测试、加新插件、CI 流程
+- ✅ 新 `docs/ROADMAP.md`（中文）：0.2.0 / 0.3.0 / 1.0 计划
+- ✅ `CHANGELOG.md` 补 Unreleased 段
+
+### 验证（最新一次）
+
+```
+ruff check src tests    -> All checks passed!
+ruff format --check    -> 41 files already formatted
+mypy src               -> Success: no issues found in 22 source files
+pytest                 -> 36 passed, 7 skipped, 1 warning in 2.73s
+spstpipe list          -> 6 plugins listed
+```
+

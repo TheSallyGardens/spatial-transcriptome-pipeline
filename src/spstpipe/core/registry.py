@@ -8,6 +8,7 @@
 
 entry-point 声明见 pyproject.toml 的 [project.entry-points."<group>"] 节。
 """
+
 from __future__ import annotations
 
 from importlib import metadata
@@ -25,9 +26,9 @@ def discover_plugins(group: str) -> dict[str, type[BasePlugin]]:
     eps = metadata.entry_points()
     # Python 3.10+ 用 eps.select(group=...)；3.9 用 eps.get(group, [])
     try:
-        entries = eps.select(group=group)  # type: ignore[attr-defined]
+        entries = eps.select(group=group)
     except AttributeError:
-        entries = eps.get(group, [])  # type: ignore[union-attr]
+        entries = eps.get(group, [])  # type: ignore[arg-type]
     for ep in entries:
         try:
             obj = ep.load()
