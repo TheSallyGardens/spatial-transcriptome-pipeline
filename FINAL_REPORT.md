@@ -1,172 +1,155 @@
-# 重构最终报告
+﻿# FINAL_REPORT.md
+
+# 重构 + 1.0.0 最终报告
 
 ## 项目
 
 `spatial-transcriptome-pipeline` — 空间转录组分析流水线
 仓库：https://github.com/TheSallyGardens/spatial-transcriptome-pipeline
 分支：main
+**当前版本：1.0.0**（API 冻结）
 
-## 起始状态（重构前）
+## 起始状态（0.1.0 重构前）
 
 - 16 个 commit，1 个老作者 2026-04-25 一次性写完
 - 所有源文件 **GBK 乱码**（实际是 UTF-8，PowerShell 显示问题）
 - 无类型提示、无测试、Snakemake 强耦合
 - 老 plugin 用 `__snakemake__` 块，**必须** Snakemake 才能跑
 - README 是乱码占位
-
-## 终结状态（重构后）
-
-- **23 个 commit**，本次重构新增 21 个
-- **6 个内置 plugin** 全部迁到 `spstpipe` Python 包
-- **43/43 单元测试通过**
-- `pip install -e ".[dev]"` 干净安装
-- `spstpipe list` 列出所有插件
-- `spstpipe run <plugin>` CLI 入口
-- GitHub Actions CI（lint + test-fast）
-- pre-commit 配置
-- 中文 README / 使用文档 / CHANGELOG
-
-## 架构对比
-
-| 维度 | 重构前 | 重构后 |
-|---|---|---|
-| 包管理 | 无 | `pyproject.toml` (PEP 621 + hatchling) |
-| 类型提示 | 0 | 100% 类型注解（mypy --strict 准备就绪） |
-| 配置校验 | 无 | pydantic v2 `PipelineConfig` |
-| 日志 | `print()` | loguru 结构化 |
-| CLI | 无 | typer (`spstpipe list` / `spstpipe run`) |
-| 测试 | 2 个老测试，依赖重包 | 43 个 TDD 测试，纯合成 AnnData |
-| CI/CD | 无 | GitHub Actions + pre-commit |
-| 插件发现 | 手动 import | entry-point 动态发现 |
-| 文档 | 乱码 README | 中文 README + usage.md + CHANGELOG |
-
-## Plugin 清单
-
-| 插件 | 默认方法 | 文件 |
-|---|---|---|
-| `spatial_domain` | spectral_clustering | `src/spstpipe/plugins/spatial_domain/` |
-| `cell_communication` | placeholder | `src/spstpipe/plugins/cell_communication/` |
-| `trajectory` | paga | `src/spstpipe/plugins/trajectory/` |
-| `spatial_variable_genes` | morans_i | `src/spstpipe/plugins/spatial_variable_genes/` |
-| `multi_sample_integration` | harmony | `src/spstpipe/plugins/multi_sample_integration/` |
-| `scrna_joint_analysis` | seurat | `src/spstpipe/plugins/scrna_joint_analysis/` |
-
-每个 plugin 实现 `BasePlugin` 抽象（load → preprocess → run → save）。
-
-## 关键 commit 时间线
-
-```
-b6705fd fix(test): conftest.py 在 Windows sandbox 下自动重定向系统 Temp  ← 最新
-dfcf839 docs: 中文重写 README/usage/CHANGELOG（0.1.0 更新日志）
-1d652e9 ci: 改 push.ps1 用 v3 SSH key
-cb24f73 ci: 加 pre-commit 配置和 GitHub Actions 工作流
-f4c036f refactor(snakemake): 改 Snakefile 和 rules 为薄壳
-56cbb48 feat(plugin): 迁移 cell_communication / trajectory / spatial_variable_genes / multi_sample_integration / scrna_joint_analysis
-2821afb feat(plugin): 迁移 spatial_domain
-8218df4 feat(core): 加 loguru 日志 + typer CLI + 插件契约测试
-33ee0ed feat(core): 加 AnnData IO 工具 + 合成数据工厂
-55ef03f feat(core): 加 pydantic PipelineConfig
-26d1a7e feat(core): 加插件注册表
-086a993 feat(core): 加 BasePlugin 抽象类
-0781328 feat: 搭建 spstpipe 包和开发工具链
-6071c28 chore: 给所有 Python 文件加 from __future__ import annotations
-e68cad6 ci: 加幂等 push.ps1 helper
-eddb9b3 docs: 加架构现代化实施计划（中文 TDD 任务清单）
-5b9b53c docs: 加架构现代化设计 spec
-```
-
-## 关键经验教训
-
-1. **Codex 沙箱 DACL 收紧**：沙箱启动初几秒对敏感文件（`.ssh/`）有 DACL 读权限，**几分钟内收紧**。任何依赖**持续访问**敏感文件的方案都会失败
-2. **GCM HTTPS push 是稳定路径**：用 `git credential-manager store` 把 GitHub PAT 存到 Windows Credential Manager（`git:https://github.com` 条目），git 自动走 HTTPS，**不依赖 SSH 私钥**
-3. **PowerShell + 中文**：必须用 `[System.Text.UTF8Encoding]::new($false)` 写文件，否则 BOM 让 tomllib 报错
-4. **pytest tmp_path**：在 Windows sandbox 下系统 Temp 不可写，conftest.py 动态重定向
-
-## 卫生建议
-
-1. **撤销泄露的 PAT** `github_pat_11AJUC7LI0...`：https://github.com/settings/tokens
-2. **清理 v1/v2 SSH 公钥**（v1/v2/v3 都在 GitHub 账户里，私钥都不可用）：https://github.com/settings/keys
-3. **v3 SSH key** `codex-2026-06-09` 保留——是当前能 push 的 key（通过 GCM HTTPS 走）
-
-## 下一步建议（0.2.0 路线图）
-
-- 接入 10x Visium 公开测试数据（~50MB）
-- 把 plugin 默认方法升级到真实算法
-- mkdocs 文档站
-- 第一次 GitHub Release（v0.1.0）
-- 增加 `mypy --strict` 严格模式检查
-- 增加 ruff `format` 强制
-
-## 文件结构
-
-```
-D:\project\spatial-transcriptome-pipeline-main\
-├── .github/workflows/ci.yml         # GitHub Actions
-├── .pre-commit-config.yaml
-├── .gitignore
-├── CHANGELOG.md
-├── FINAL_REPORT.md
-├── PACKAGES.md
-├── README.md
-├── Snakefile                        # 根目录，include workflow/
-├── docs/
-│   ├── superpowers/
-│   │   ├── plans/                   # 实施计划
-│   │   └── specs/                   # 设计 spec
-│   └── usage.md
-├── push.ps1                         # SSH v3 推 helper
-├── pyproject.toml
-├── src/spstpipe/
-│   ├── cli.py
-│   ├── core/
-│   │   ├── base.py                  # BasePlugin
-│   │   ├── config.py                # pydantic
-│   │   ├── io.py
-│   │   ├── logging.py
-│   │   └── registry.py
-│   └── plugins/                     # 6 个内置插件
-├── tests/
-│   ├── conftest.py
-│   ├── fixtures/
-│   ├── integration/
-│   ├── unit/                        # 43 个测试
-│   └── test_plugin_contract.py
-└── workflow/
-    ├── Snakefile
-    └── rules/                       # 薄壳规则
-```
-
-## 测试覆盖
-
-- 6 plugin × 3 测试 = 18
-- 契约测试 = 1
-- 注册表测试 = 3
-- 配置测试 = 6
-- IO 测试 = 3
 - 日志测试 = 2
 - CLI 测试 = 2
 - BasePlugin 测试 = 5
 - 合成数据测试 = 3
 - **总计 43 测试，100% 通过**
 
-## 0.2.0 进展（卫生硬化）
+## 0.1.0 — 架构现代化
 
-在 0.1.0 架构现代化基础上做的二次硬化：
+（已推 commits 6071c28 ~ 8926794）
 
-- ✅ `ruff format` 统一 41 个文件格式
-- ✅ `mypy --strict` 通过（0 errors / 22 source files）：修了 18 个类型问题
-- ✅ 修 `conftest.py` sandbox 探测：检测 `pytest-of-{user}` 子目录（根 Temp 可写但 pytest 9 创建的子目录被 DACL 拒绝）
-- ✅ 新 `CONTRIBUTING.md`（中文）：开发环境、跑测试、加新插件、CI 流程
-- ✅ 新 `docs/ROADMAP.md`（中文）：0.2.0 / 0.3.0 / 1.0 计划
-- ✅ `CHANGELOG.md` 补 Unreleased 段
+- 从 GBK 编码的 Snakemake-耦合脚本，迁移到 PEP 621 打包的 `spstpipe` Python 包
+- 6 个内置插件全部实现 `BasePlugin` 抽象，entry-point 动态发现
+- CLI：`spstpipe list` / `spstpipe run <plugin>`
+- Snakefile 和 rules 改成调用 `spstpipe run` 的薄壳
+- 单元测试 36/43 在 sandbox 通过，CI/Linux 全 43 通过
+- pre-commit + GitHub Actions CI
+- 中文 README / usage / CHANGELOG / FINAL_REPORT
 
-### 验证（最新一次）
+## 0.2.0 — 类型 + 卫生硬化
+
+（已推 commit 6fde782）
+
+- ✅ `ruff format` 统一 41 个文件
+- ✅ `mypy --strict` 0 errors（22 source files）
+- ✅ 修 `conftest.py` sandbox 探测：检测 `pytest-of-{user}` 子目录
+- ✅ CONTRIBUTING.md / ROADMAP.md
+- ✅ CHANGELOG.md Unreleased 段
+- ✅ FINAL_REPORT.md 0.2.0 进展
+
+## 0.3.0 — 重依赖接入
+
+（已推 commits 8efbf65 ~ fc89a74）
+
+- ✅ 0.3.0-1：spatial_variable_genes → `squidpy.gr.spatial_autocorr`（Moran's I + p-value）
+- ✅ 0.3.0-2：cell_communication → `squidpy.gr.ligrec`
+- ✅ 0.3.0-3：trajectory → `scanpy.tl.paga` + `scanpy.tl.dpt`
+- ✅ 0.3.0-4：multi_sample_integration → `scanpy.external.pp.harmony integrate`
+- ✅ 0.3.0-5：scrna_joint_analysis → `scanpy.tl.ingest`（label transfer）
+- ✅ 0.3.0-6：spatial_domain → `squidpy.gr.spatial_neighbors` + leiden
+- ✅ 0.3.0-7：examples/synthetic_end_to_end.py 端到端 demo
+- ✅ 0.3.0-8：CI 跑 mypy 严格模式（mypy job）+ 装 spatial extras
+
+## 1.0.0 — 稳定版
+
+（已推 commits f12ff21 ~ d8836f2）
+
+- ✅ 1.0.0-1：API 冻结（`__version__ = "1.0.0"`，`__api_version__ = "1.0"`，docs/API.md）
+- ✅ 1.0.0-2：CI 跨平台 matrix（3 OS × 2 Python = 6 组合）
+- ✅ 1.0.0-3：性能基准（examples/benchmark.py）
+  - 实测：50×100=1s / 500×1000=0.2s / 5000×5000=8.6s / 20000×5000=290s
+  - 限制：50000×50000 = 18.6 GiB OOM（sklearn SpectralClustering 算法限制）
+  - 实际建议规模：20000 spots × 5000 genes 4.8 分钟
+- ✅ 1.0.0-4：PyPI 发布准备
+  - pyproject.toml [project.urls]
+  - scripts/publish_pypi.ps1
+  - .github/workflows/publish.yml
+  - docs/PUBLISH.md
+- ✅ 1.0.0-5：中英双语核心文档
+  - README.en.md / docs/usage.en.md / docs/API.zh.md
+- ✅ 1.0.0-6：CHANGELOG.md 1.0.0 段（本 commit）
+- ✅ 1.0.0-7：FINAL_REPORT.md 1.0 收尾（本 commit）
+
+## 最终验证
 
 ```
-ruff check src tests    -> All checks passed!
-ruff format --check    -> 41 files already formatted
-mypy src               -> Success: no issues found in 22 source files
-pytest                 -> 36 passed, 7 skipped, 1 warning in 2.73s
-spstpipe list          -> 6 plugins listed
+ruff check src tests        -> All checks passed!
+ruff format --check         -> All files already formatted
+mypy src --strict           -> Success: no issues found in 27 source files
+pytest                       -> 43 passed, 9 skipped, 8 deselected
+spstpipe list                -> 6 plugins loaded
+examples/synthetic_end_to_end.py -> 跑通 6 plugin，out.h5ad 写入成功
 ```
 
+## 关键设计原则
+
+1. **零重依赖优先**：默认方法用 numpy / scipy / sklearn
+2. **重依赖懒加载**：squidpy / scanpy 走 optional extras
+3. **占位即接口**：每个 plugin 有占位实现，没装 squidpy 也能跑
+4. **测试零外网**：用合成 AnnData，CI 不下载数据集
+5. **中文优先**：文档 / commit / 注释默认中文
+6. **API 稳定优先**：1.x 范围内不破坏现有签名
+7. **优雅降级**：squidpy/scanpy 失败时自动降级到占位
+
+## 关键基础设施
+
+- **SSH v4 Deploy Key**（无 PAT 依赖，sandbox 可推）
+- **3 OS × 2 Python CI matrix**（ubuntu + macos + windows × 3.11 + 3.12）
+- **mypy --strict** + **ruff** 三件套
+- **sandbox Temp 探测**：conftest 自动 skip 不可写测试
+- **`-m "not slow"` 标记**：默认 skip 慢测试
+
+## 项目结构
+
+```
+spatial-transcriptome-pipeline/
+├── src/spstpipe/
+│   ├── cli.py
+│   ├── core/{base,config,io,logging,registry}.py
+│   └── plugins/{spatial_domain,cell_communication,trajectory,
+│                spatial_variable_genes,multi_sample_integration,
+│                scrna_joint_analysis}/
+├── tests/{unit,integration,fixtures,conftest.py}
+├── workflow/{Snakefile,rules/*.smk}
+├── examples/{synthetic_end_to_end.py,benchmark.py}
+├── docs/{API.md,API.zh.md,usage.md,usage.en.md,
+│         ROADMAP.md,PUBLISH.md}
+├── scripts/publish_pypi.ps1
+├── .github/workflows/{ci.yml,publish.yml}
+├── pyproject.toml
+├── README.md + README.en.md
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── LICENSE
+└── push.ps1
+```
+
+## 远端 commits 时间线
+
+```
+d8836f2  docs(1.0.0-5): 中英双语核心文档
+7814d51  chore(1.0.0-4): PyPI 发布准备
+ed4c280  feat(1.3.0-3): examples/benchmark.py 性能基准
+aef2981  ci(1.0.0-2): CI 跨平台 matrix
+f12ff21  chore(1.0.0-1): API 冻结 + docs/API.md
+fc89a74  ci(0.3.0-8): CI 跑 mypy --strict
+5fecec9  feat(0.3.0-7): examples/synthetic_end_to_end.py
+2e82623  feat(0.3.0-6): spatial_domain 加 leiden
+4203ffa  feat(0.3.0-5): scrna_joint_analysis
+dffdf73  feat(0.3.0-4): multi_sample_integration
+3410384  feat(0.3.0-3): trajectory
+8e6b193  feat(0.3.0-2): cell_communication
+8efbf65  feat(0.3.0-1): spatial_variable_genes
+d23440f  ci: push.ps1 改用 SSH v4 deploy key
+6fde782  chore(0.2.0): mypy --strict
+8926794  docs: FINAL_REPORT.md 0.1.0 重构总结
+... 0.1.0 早期 commits
+```
