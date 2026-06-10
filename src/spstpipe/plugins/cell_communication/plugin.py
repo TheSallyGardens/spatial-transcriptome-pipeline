@@ -4,16 +4,29 @@ from __future__ import annotations
 from pathlib import Path
 
 import anndata as ad
-import numpy as np
 
 from spstpipe.core.base import BasePlugin
 from spstpipe.core.io import load_anndata, save_anndata
+from spstpipe.plugins.cell_communication.algorithms import (
+    run_cell_communication,
+)
 
 
 class CellCommunicationPlugin(BasePlugin):
-    """cell_communication 插件。
+    """细胞通讯分析插件。
 
-    支持方法：placeholder, cellchat, nichenet, squidpy（默认 placeholder，重依赖方法用占位逻辑）。
+    支持方法：
+      - placeholder : 占位（默认，零依赖）
+      - squidpy_ligrec : squidpy.gr.ligrec 真方法（需要装 `pip install spstpipe[spatial]`）
+
+    输入要求：
+      - `obs["cell_type"]` 必须存在
+      - 有空间坐标更佳（`obsm["spatial"]`），但非强制
+
+    输出：
+      - `obs["cell_communication_score"]`：每个 spot 的总体通讯强度
+      - `uns["cell_communication_result"]`：通讯结果（p-values 矩阵或占位结构）
+      - `uns["cell_communication_method"]`：实际走的方法
     """
 
     name = "cell_communication"
@@ -34,13 +47,9 @@ class CellCommunicationPlugin(BasePlugin):
         return adata
 
     def run(self, adata: ad.AnnData) -> ad.AnnData:
-        # 所有方法当前用占位/默认逻辑
-        rng = np.random.default_rng(42)
-        if "cell_communication_score":
-            adata.obs["cell_communication_score"] = rng.integers(0, 3, size=adata.n_obs).astype(str)
-            adata.var["spatial_variable"] = rng.random(size=adata.n_vars)
-        adata.uns["cell_communication_method"] = self.method
-        return adata
+        use_squidpy = bool(self.params.get("use_squidpy", True))
+        # 任何 method 名都走 run_cell_communication（内部按 use_squidpy 决定真/占位）
+        return run_cell_communication(adata, use_squidpy=use_squidpy)
 
     def save(self, adata: ad.AnnData, path: Path) -> None:
         save_anndata(adata, path)
