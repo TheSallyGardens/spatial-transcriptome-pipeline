@@ -48,6 +48,11 @@ scrna_joint_analysis = "spstpipe.plugins.scrna_joint_analysis.plugin:ScRNAJointA
 [project.entry-points."spstpipe.test_plugins"]
 synthetic = "tests.fixtures.synthetic_plugin.plugin:SyntheticPlugin"
 
+[project.urls]
+Repository = "https://github.com/TheSallyGardens/spatial-transcriptome-pipeline"
+Issues = "https://github.com/TheSallyGardens/spatial-transcriptome-pipeline/issues"
+Changelog = "https://github.com/TheSallyGardens/spatial-transcriptome-pipeline/blob/main/CHANGELOG.md"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/spstpipe"]
 
