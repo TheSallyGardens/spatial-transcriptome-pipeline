@@ -1,13 +1,10 @@
-# workflow/rules/spatial_domain.smk
-rule spatial_domain_analysis:
+# spatial_domain 规则 - 调 spstpipe CLI
+rule run_spatial_domain:
     input:
-        expand("results/{sample}/data/annotated_adata.h5ad", sample=[s["id"] for s in config["samples"]])
+        "results/preprocessing/{{sample}}.h5ad"
     output:
-        expand("results/{sample}/data/spatial_domain_adata.h5ad", sample=[s["id"] for s in config["samples"]])
-    params:
-        method=config["plugins"]["spatial_domain"]["method"],
-        params=config["plugins"]["spatial_domain"]["params"]
-    conda:
-        "../envs/scanpy.yaml"
-    script:
-        "../../plugins/spatial_domain/run.py"
+        "results/spatial_domain/{{sample}}.h5ad"
+    log:
+        "logs/spatial_domain/{{sample}}.log"
+    shell:
+        "spstpipe run spatial_domain --input {{input}} --output {{output}} 2> {{log}}"

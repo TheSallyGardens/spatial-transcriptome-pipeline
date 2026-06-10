@@ -1,13 +1,10 @@
-# workflow/rules/scRNA_joint_analysis.smk
-rule scRNA_joint_analysis:
+# scRNA_joint_analysis 规则 - 调 spstpipe CLI
+rule run_scRNA_joint_analysis:
     input:
-        expand("results/{sample}/data/annotated_adata.h5ad", sample=[s["id"] for s in config["samples"]])
+        "results/preprocessing/{{sample}}.h5ad"
     output:
-        expand("results/{sample}/data/scRNA_joint_adata.h5ad", sample=[s["id"] for s in config["samples"]])
-    params:
-        method=config["plugins"]["scRNA_joint_analysis"]["method"],
-        params=config["plugins"]["scRNA_joint_analysis"]["params"]
-    conda:
-        "../envs/scanpy.yaml"
-    script:
-        "../../plugins/scRNA_joint_analysis/run.py"
+        "results/scRNA_joint_analysis/{{sample}}.h5ad"
+    log:
+        "logs/scRNA_joint_analysis/{{sample}}.log"
+    shell:
+        "spstpipe run scRNA_joint_analysis --input {{input}} --output {{output}} 2> {{log}}"

@@ -1,0 +1,17 @@
+# Snakefile
+configfile: "config/config.yaml"
+configfile: "config/samples.yaml"
+
+SAMPLES = [s["id"] for s in config["samples"]]
+ENABLED_PLUGINS = [p["name"] for p in config.get("plugins", []) if p.get("enabled", False)]
+
+
+rule aggregate_all:
+    input:
+        expand("results/{plugin}/{sample}.h5ad", plugin=ENABLED_PLUGINS, sample=SAMPLES),
+    output:
+        "results/aggregated/done.txt"
+    run:
+        from pathlib import Path
+        Path(output[0]).parent.mkdir(parents=True, exist_ok=True)
+        Path(output[0]).write_text("aggregated", encoding="utf-8")

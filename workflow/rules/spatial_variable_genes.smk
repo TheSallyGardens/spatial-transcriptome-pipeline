@@ -1,13 +1,10 @@
-# workflow/rules/spatial_variable_genes.smk
-rule spatial_variable_genes_analysis:
+# spatial_variable_genes 规则 - 调 spstpipe CLI
+rule run_spatial_variable_genes:
     input:
-        expand("results/{sample}/data/normalized_adata.h5ad", sample=[s["id"] for s in config["samples"]])
+        "results/preprocessing/{{sample}}.h5ad"
     output:
-        expand("results/{sample}/data/spatial_variable_genes_adata.h5ad", sample=[s["id"] for s in config["samples"]])
-    params:
-        method=config["plugins"]["spatial_variable_genes"]["method"],
-        params=config["plugins"]["spatial_variable_genes"]["params"]
-    conda:
-        "../envs/scanpy.yaml"
-    script:
-        "../../plugins/spatial_variable_genes/run.py"
+        "results/spatial_variable_genes/{{sample}}.h5ad"
+    log:
+        "logs/spatial_variable_genes/{{sample}}.log"
+    shell:
+        "spstpipe run spatial_variable_genes --input {{input}} --output {{output}} 2> {{log}}"

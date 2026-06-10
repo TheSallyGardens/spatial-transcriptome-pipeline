@@ -1,13 +1,10 @@
-# workflow/rules/trajectory.smk
-rule trajectory_analysis:
+# trajectory 规则 - 调 spstpipe CLI
+rule run_trajectory:
     input:
-        expand("results/{sample}/data/clustered_adata.h5ad", sample=[s["id"] for s in config["samples"]])
+        "results/preprocessing/{{sample}}.h5ad"
     output:
-        expand("results/{sample}/data/trajectory_adata.h5ad", sample=[s["id"] for s in config["samples"]])
-    params:
-        method=config["plugins"]["trajectory"]["method"],
-        params=config["plugins"]["trajectory"]["params"]
-    conda:
-        "../envs/scanpy.yaml"
-    script:
-        "../../plugins/trajectory/run.py"
+        "results/trajectory/{{sample}}.h5ad"
+    log:
+        "logs/trajectory/{{sample}}.log"
+    shell:
+        "spstpipe run trajectory --input {{input}} --output {{output}} 2> {{log}}"

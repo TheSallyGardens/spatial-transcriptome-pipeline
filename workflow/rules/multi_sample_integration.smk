@@ -1,13 +1,10 @@
-# workflow/rules/multi_sample_integration.smk
-rule multi_sample_integration:
+# multi_sample_integration 规则 - 调 spstpipe CLI
+rule run_multi_sample_integration:
     input:
-        expand("results/{sample}/data/annotated_adata.h5ad", sample=[s["id"] for s in config["samples"]])
+        "results/preprocessing/{{sample}}.h5ad"
     output:
-        "results/integrated/integrated_adata.h5ad"
-    params:
-        method=config["plugins"]["multi_sample_integration"]["method"],
-        params=config["plugins"]["multi_sample_integration"]["params"]
-    conda:
-        "../envs/scanpy.yaml"
-    script:
-        "../../plugins/multi_sample_integration/run.py"
+        "results/multi_sample_integration/{{sample}}.h5ad"
+    log:
+        "logs/multi_sample_integration/{{sample}}.log"
+    shell:
+        "spstpipe run multi_sample_integration --input {{input}} --output {{output}} 2> {{log}}"
