@@ -60,7 +60,7 @@ select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF"]
 ignore = ["E501"]
 
 [tool.pytest.ini_options]
-addopts = "-ra -q --basetemp=.pytest_tmp"
+addopts = "-ra -q"
 cache_dir = ".pytest_tmp/cache"
 testpaths = ["tests"]
 pythonpath = ["src", "tests"]
