@@ -32,7 +32,7 @@
 - ✅ 0.3.0-7：写 `examples/synthetic_end_to_end.py` 端到端 demo
 - ✅ 0.3.0-8：CI 跑 mypy 严格模式（mypy job）+ 装 spatial extras
 
-## 🟡 1.0.0（2026-Q2）— 稳定版
+## ✅ 1.0.0（2026-06-10）— 稳定版
 
 - ✅ 1.0.0-1：API 冻结（`__version__ = "1.0.0"`，`__api_version__ = "1.0"`，docs/API.md）
 - ⏳ 1.0.0-2：跨平台测试（Windows / macOS / Linux GitHub Actions matrix）
