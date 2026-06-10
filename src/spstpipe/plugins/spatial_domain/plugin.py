@@ -7,16 +7,22 @@ import anndata as ad
 
 from spstpipe.core.base import BasePlugin
 from spstpipe.core.io import load_anndata, save_anndata
-from spstpipe.plugins.spatial_domain.algorithms import run_spectral_clustering
+from spstpipe.plugins.spatial_domain.algorithms import (
+    run_spatial_domain,
+)
 
 
 class SpatialDomainPlugin(BasePlugin):
     """空间域识别插件。
 
     支持方法：
-      - spectral_clustering : 基于空间坐标的谱聚类（默认，无重依赖）
-      - spagcn              : SpaGCN（图卷积，需 torch，懒加载）
-      - bayespace / stlearn : 占位（默认走谱聚类）
+      - spectral_clustering : 谱聚类（默认，无重依赖）
+      - leiden              : squidpy + scanpy leiden（需 pip install spstpipe[spatial]）
+      - spagcn / bayespace / stlearn : 占位（走谱聚类）
+
+    输出：
+      - obs["spatial_domain"] : 每个 spot 的 domain 标签
+      - uns["spatial_domain_method"] : 实际走的方法
     """
 
     name = "spatial_domain"
@@ -39,13 +45,10 @@ class SpatialDomainPlugin(BasePlugin):
         return adata
 
     def run(self, adata: ad.AnnData) -> ad.AnnData:
-        if self.method in ("spectral_clustering", "spagcn", "bayespace", "stlearn", "placeholder"):
-            # 重依赖方法当前以谱聚类兜底（spagcn/bayespace/stlearn 的占位实现）
-            params = self._safe_params(["resolution"])
-            raw = params.get("resolution", 0.5)
-            resolution = float(raw) if isinstance(raw, (int, float)) else 0.5
-            return run_spectral_clustering(adata, resolution=resolution)
-        raise ValueError(f"未知方法：{self.method}")
+        params = self._safe_params(["resolution"])
+        raw = params.get("resolution", 0.5)
+        resolution = float(raw) if isinstance(raw, (int, float)) else 0.5
+        return run_spatial_domain(adata, method=self.method, resolution=resolution)
 
     def save(self, adata: ad.AnnData, path: Path) -> None:
         save_anndata(adata, path)
