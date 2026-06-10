@@ -4,16 +4,28 @@ from __future__ import annotations
 from pathlib import Path
 
 import anndata as ad
-import numpy as np
 
 from spstpipe.core.base import BasePlugin
 from spstpipe.core.io import load_anndata, save_anndata
+from spstpipe.plugins.multi_sample_integration.algorithms import (
+    run_integration,
+)
 
 
 class MultiSampleIntegrationPlugin(BasePlugin):
-    """multi_sample_integration 插件。
+    """多样本整合插件（Harmony）。
 
-    支持方法：harmony, bbknn, liger（默认 harmony，重依赖方法用占位逻辑）。
+    支持方法：
+      - harmony : Harmony 整合（默认，scanpy 真方法）
+      - harmony_placeholder : 占位（无整合效果，零依赖也能跑）
+
+    输入要求：
+      - `obs["batch"]` 必须存在
+
+    输出：
+      - `obs["integration_batch"]`：复制 batch 标签
+      - `obsm["X_pca_harmony"]`：校正后的 PCA（真方法才有）
+      - `uns["multi_sample_integration_method"]`：实际走的方法
     """
 
     name = "multi_sample_integration"
@@ -34,13 +46,8 @@ class MultiSampleIntegrationPlugin(BasePlugin):
         return adata
 
     def run(self, adata: ad.AnnData) -> ad.AnnData:
-        # 所有方法当前用占位/默认逻辑
-        rng = np.random.default_rng(42)
-        if "integration_batch":
-            adata.obs["integration_batch"] = rng.integers(0, 3, size=adata.n_obs).astype(str)
-            adata.var["spatial_variable"] = rng.random(size=adata.n_vars)
-        adata.uns["multi_sample_integration_method"] = self.method
-        return adata
+        use_scanpy = bool(self.params.get("use_scanpy", True))
+        return run_integration(adata, use_scanpy=use_scanpy)
 
     def save(self, adata: ad.AnnData, path: Path) -> None:
         save_anndata(adata, path)

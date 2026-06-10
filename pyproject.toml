@@ -87,6 +87,7 @@ warn_unused_ignores = true
 module = [
     "anndata",
     "scanpy",
+    "scanpy.external",
     "scipy",
     "scipy.spatial",
     "scipy.sparse",
