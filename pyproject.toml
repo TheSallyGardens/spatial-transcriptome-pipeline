@@ -60,7 +60,8 @@ select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF"]
 ignore = ["E501"]
 
 [tool.pytest.ini_options]
-addopts = "-ra -q"
+addopts = "-ra -q --basetemp=.pytest_tmp"
+cache_dir = ".pytest_tmp/cache"
 testpaths = ["tests"]
 pythonpath = ["src", "tests"]
 markers = [
@@ -68,9 +69,12 @@ markers = [
     "torch: 需要 torch",
     "r_seurat: 需要 rpy2",
 ]
+# pytest tmp_path 走项目内（避免 WinError 5 拒访系统 Temp）
+# 用 conftest.py 创建 .pytest_tmp 目录
 
 [tool.mypy]
 python_version = "3.11"
 strict = true
 files = ["src/spstpipe"]
 warn_unused_ignores = true
+
